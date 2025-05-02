@@ -1,0 +1,68 @@
+<html>
+<head>
+<style>
+body {
+  max-width: 500px;
+  margin: 50px auto;
+}
+input {
+  padding: 10px;
+  box-sizing: border-box;
+  width: 100%;
+}
+</style>
+</head>
+<body>
+<form>
+<input type='text' placeholder='enter a message' class='msg'>
+</form>
+<div id='response'></div>
+<script>
+document.querySelector("form").addEventListener("submit", async (e) => {
+  e.preventDefault()
+  e.stopPropagation()
+  let host = new URLSearchParams(location.search).get("host")
+  let msg = e.target.querySelector('.msg').value
+  console.log({ msg })
+  const response = await fetch(`${host}/v1/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer YOUR_OPENAI_API_KEY",
+    },
+    body: JSON.stringify({
+      //"model": "qwen3-30b-a3b",
+      "model": "qwen3-4b",
+      "stream": true,
+      "messages": [
+        { "role": "system", "content": "Always answer in rhymes. Today is Thursday" },
+        { "role": "user", "content": msg }
+      ],
+      "temperature": 0.7,
+      "max_tokens": -1,
+    }),
+  }).then((res) => {
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    function read() {
+      reader.read().then(({ value, done }) => {
+        if (done) return;
+        const chunk = decoder.decode(value);
+        for (const line of chunk.split("\n")) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6).trim();
+            if (data === "[DONE]") return;
+            let j = JSON.parse(data)
+            document.querySelector("#response").textContent += j.choices[0].delta.content
+          }
+        }
+        read();
+      });
+    }
+    read();
+  })
+  console.log(response);
+})
+</script>
+</body>
+</html>
