@@ -21,18 +21,22 @@ input {
 document.querySelector("form").addEventListener("submit", async (e) => {
   e.preventDefault()
   e.stopPropagation()
-  let host = new URLSearchParams(location.search).get("host")
+  let params = new URLSearchParams(location.search)
+  let host = params.get("host")
+  let model = params.get("model")
   let msg = e.target.querySelector('.msg').value
   console.log({ msg })
   const response = await fetch(`${host}/v1/chat/completions`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer YOUR_OPENAI_API_KEY",
     },
     body: JSON.stringify({
+      model,
       //"model": "qwen3-30b-a3b",
-      "model": "qwen3-4b",
+      //"model": "qwen3-4b",
       "stream": true,
       "messages": [
         { "role": "system", "content": "Always answer in rhymes. Today is Thursday" },
