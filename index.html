@@ -28,7 +28,6 @@ document.querySelector("form").addEventListener("submit", async (e) => {
   console.log({ msg })
   const response = await fetch(`${host}/v1/chat/completions`, {
     method: "POST",
-    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer YOUR_OPENAI_API_KEY",
